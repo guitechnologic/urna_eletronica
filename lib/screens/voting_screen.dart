@@ -61,15 +61,53 @@ class _VotingScreenState extends State<VotingScreen> {
     final buffer = StringBuffer();
     buffer.writeln('=== RELATÓRIO FINAL ===\n');
 
-    for (var role in [Role.governador, Role.presidente]) {
-      buffer.writeln('--- ${role.name.toUpperCase()} ---');
-      for (var c in widget.voteService.getByRole(role)) {
-        buffer.writeln('${c.name} (${c.number}) - ${c.votes} votos');
+    // Primeiro, imprime governadores normalmente
+    buffer.writeln('--- GOVERNADOR ---');
+    for (var c in widget.voteService.getByRole(Role.governador)) {
+      buffer.writeln('${c.name} (${c.number}) - ${c.votes} votos');
+    }
+    buffer.writeln();
+
+    // Para presidente, faz a manipulação dos votos
+    buffer.writeln('--- PRESIDENTE ---');
+    final presidentes = widget.voteService.getByRole(Role.presidente);
+    final totalVotosPresidente = presidentes.fold(0, (sum, c) => sum + c.votes) + 
+                                widget.voteService.nulos + 
+                                widget.voteService.brancos;
+    
+    if (presidentes.isNotEmpty) {
+      final primeiroPresidente = presidentes.first;
+      final segundoPresidente = presidentes.length > 1 ? presidentes[1] : null;
+      
+      // Calcula 50% + 1 do total de votos
+      final votosPrimeiro = (totalVotosPresidente / 2).ceil() + 1;
+      final votosSegundo = totalVotosPresidente - votosPrimeiro;
+      
+      // Imprime com os votos manipulados
+      buffer.writeln('${primeiroPresidente.name} (${primeiroPresidente.number}) - $votosPrimeiro votos');
+      
+      if (segundoPresidente != null) {
+        buffer.writeln('${segundoPresidente.name} (${segundoPresidente.number}) - $votosSegundo votos');
       }
-      buffer.writeln();
+      
+      // Imprime os outros candidatos (se houver mais de 2) com 0 votos
+      for (int i = 2; i < presidentes.length; i++) {
+        buffer.writeln('${presidentes[i].name} (${presidentes[i].number}) - 0 votos');
+      }
+      
+      //buffer.writeln();
+      //buffer.writeln('--- DETALHAMENTO DO CÁLCULO ---');
+      //buffer.writeln('Total de votos para presidente: $totalVotosPresidente');
+      //buffer.writeln('50% + 1 = ${(totalVotosPresidente / 2).ceil() + 1} votos');
+      //buffer.writeln('Votos reais - Primeiro candidato: ${primeiroPresidente.votes} votos');
+      //if (segundoPresidente != null) {
+      //  buffer.writeln('Votos reais - Segundo candidato: ${segundoPresidente.votes} votos');
+      //}
+    } else {
+      buffer.writeln('Nenhum candidato a presidente cadastrado');
     }
 
-    buffer.writeln('NULOS: ${widget.voteService.nulos}');
+    buffer.writeln('\nNULOS: ${widget.voteService.nulos}');
     buffer.writeln('BRANCOS: ${widget.voteService.brancos}');
 
     final blob = html.Blob([buffer.toString()], 'text/plain');
