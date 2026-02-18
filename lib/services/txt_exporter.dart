@@ -15,6 +15,7 @@ class TxtExporter {
 
     final governadores =
         candidates.where((c) => c.role == Role.governador);
+
     final presidentes =
         candidates.where((c) => c.role == Role.presidente);
 
@@ -22,6 +23,7 @@ class TxtExporter {
     for (var c in governadores) {
       content += '${c.name} (${c.number}) - ${c.votes} votos\n';
     }
+
     content += '\n--- PRESIDENTE ---\n';
     for (var c in presidentes) {
       content += '${c.name} (${c.number}) - ${c.votes} votos\n';

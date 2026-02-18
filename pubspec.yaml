@@ -12,12 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Persistência de senha
   shared_preferences: ^2.2.1
-  # Exportação de arquivos TXT
   path_provider: ^2.0.15
-
-  # Ícones iOS
+  file_picker: ^10.3.10
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
@@ -27,8 +24,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  # Assets de imagens/fotos de candidatos (exemplo)
-  # assets:
-  #   - assets/images/background/
-  #   - assets/images/candidates/

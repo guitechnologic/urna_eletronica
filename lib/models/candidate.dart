@@ -1,8 +1,11 @@
-enum Role { presidente, governador }
+enum Role {
+  governador,
+  presidente,
+}
 
 class Candidate {
   final String name;
-  final String number; // 2 dígitos
+  final String number;
   final String party;
   final Role role;
   int votes;

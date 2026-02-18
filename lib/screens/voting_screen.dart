@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import '../services/vote_service.dart';
 import '../models/candidate.dart';
-import '../services/txt_exporter.dart';
 import 'dart:html' as html;
 
 class VotingScreen extends StatefulWidget {
   final VoteService voteService;
-  VotingScreen({required this.voteService});
+
+  const VotingScreen({super.key, required this.voteService});
 
   @override
-  _VotingScreenState createState() => _VotingScreenState();
+  State<VotingScreen> createState() => _VotingScreenState();
 }
 
 class _VotingScreenState extends State<VotingScreen> {
@@ -28,6 +28,7 @@ class _VotingScreenState extends State<VotingScreen> {
 
   void vote(String number) {
     widget.voteService.vote(number, currentRole);
+
     if (currentRole == Role.governador) {
       setState(() {
         currentRole = Role.presidente;
@@ -37,8 +38,8 @@ class _VotingScreenState extends State<VotingScreen> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: Text('Fim'),
-          content: Text('Próximo eleitor, por favor.'),
+          title: const Text('Fim'),
+          content: const Text('Próximo eleitor, por favor.'),
           actions: [
             TextButton(
               onPressed: () {
@@ -48,7 +49,7 @@ class _VotingScreenState extends State<VotingScreen> {
                   inputNumber = '';
                 });
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             )
           ],
         ),
@@ -57,104 +58,185 @@ class _VotingScreenState extends State<VotingScreen> {
   }
 
   void endElection() {
-    final txtContent = StringBuffer();
-    txtContent.writeln('=== RELATÓRIO FINAL DA ELEIÇÃO ===\n');
-    for (var role in [Role.governador, Role.presidente]) {
-      txtContent.writeln('--- ${role.name.toUpperCase()} ---');
-      for (var c in widget.voteService.getByRole(role)) {
-        txtContent.writeln('${c.name} (${c.number}) - ${c.votes} votos');
-      }
-      txtContent.writeln();
-    }
-    txtContent.writeln('--- VOTOS NULOS ---\n${widget.voteService.nulos}');
-    txtContent.writeln('--- VOTOS BRANCOS ---\n${widget.voteService.brancos}');
+    final buffer = StringBuffer();
+    buffer.writeln('=== RELATÓRIO FINAL ===\n');
 
-    // Web-safe download
-    final blob = html.Blob([txtContent.toString()], 'text/plain', 'native');
+    for (var role in [Role.governador, Role.presidente]) {
+      buffer.writeln('--- ${role.name.toUpperCase()} ---');
+      for (var c in widget.voteService.getByRole(role)) {
+        buffer.writeln('${c.name} (${c.number}) - ${c.votes} votos');
+      }
+      buffer.writeln();
+    }
+
+    buffer.writeln('NULOS: ${widget.voteService.nulos}');
+    buffer.writeln('BRANCOS: ${widget.voteService.brancos}');
+
+    final blob = html.Blob([buffer.toString()], 'text/plain');
     final url = html.Url.createObjectUrlFromBlob(blob);
-    final anchor = html.AnchorElement(href: url)
+    html.AnchorElement(href: url)
       ..setAttribute('download', 'resultado_eleicao.txt')
       ..click();
     html.Url.revokeObjectUrl(url);
 
-    // Reset votos
     widget.voteService.resetVotes();
     Navigator.pop(context);
     Navigator.pop(context);
   }
 
+  Widget numberButton(String number) {
+    return SizedBox(
+      width: 70,
+      height: 60,
+      child: ElevatedButton(
+        onPressed: () => addDigit(number),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          textStyle: const TextStyle(fontSize: 20),
+        ),
+        child: Text(number),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black87,
-      body: SafeArea(
-        child: Column(
-          children: [
-            SizedBox(height: 20),
-            Text(
-              'VOTE PARA ${currentRole.name.toUpperCase()}',
-              style: TextStyle(color: Colors.white, fontSize: 22),
-            ),
-            SizedBox(height: 10),
-            Text(
-              inputNumber,
-              style: TextStyle(color: Colors.yellow, fontSize: 48),
-            ),
-            SizedBox(height: 10),
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 3,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                padding: EdgeInsets.all(20),
-                childAspectRatio: 1.2,
-                children: List.generate(9, (i) => i + 1)
-                    .map((n) => ElevatedButton(
-                          onPressed: () => addDigit('$n'),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey[800],
-                              textStyle: TextStyle(fontSize: 20)),
-                          child: Text('$n'),
-                        ))
-                    .toList()
-                  ..add(ElevatedButton(
-                    onPressed: () => addDigit('0'),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[800],
-                        textStyle: TextStyle(fontSize: 20)),
-                    child: Text('0'),
-                  )),
+      backgroundColor: const Color(0xffcfcfcf),
+      body: Center(
+        child: Container(
+          width: 1200,
+          height: 500,
+          padding: const EdgeInsets.all(20),
+          color: const Color(0xffe6e6e6),
+          child: Row(
+            children: [
+
+              /// TELA ESQUERDA
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  color: Colors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'VOTE PARA ${currentRole.name.toUpperCase()}',
+                        style: const TextStyle(fontSize: 22),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Número:',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        inputNumber,
+                        style: const TextStyle(
+                            fontSize: 40, letterSpacing: 8),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                    onPressed: corrige,
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red, fixedSize: Size(100, 40)),
-                    child: Text('Corrige')),
-                ElevatedButton(
-                    onPressed: branco,
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey, fixedSize: Size(100, 40)),
-                    child: Text('Branco')),
-                ElevatedButton(
-                    onPressed: () => vote(inputNumber),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green, fixedSize: Size(100, 40)),
-                    child: Text('Confirma')),
-              ],
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: endElection,
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange, fixedSize: Size(180, 40)),
-              child: Text('Encerrar Eleição'),
-            ),
-            SizedBox(height: 20),
-          ],
+
+              const SizedBox(width: 20),
+
+              /// TECLADO DIREITA
+              Container(
+                width: 450,
+                color: const Color(0xff2b2b2b),
+                padding: const EdgeInsets.all(15),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+
+                    /// NUMEROS
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceEvenly,
+                          children: [
+                            numberButton('1'),
+                            numberButton('2'),
+                            numberButton('3'),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceEvenly,
+                          children: [
+                            numberButton('4'),
+                            numberButton('5'),
+                            numberButton('6'),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceEvenly,
+                          children: [
+                            numberButton('7'),
+                            numberButton('8'),
+                            numberButton('9'),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.center,
+                          children: [
+                            numberButton('0'),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    /// BOTOES AÇÃO
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: branco,
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              fixedSize: const Size(100, 40)),
+                          child: const Text('Branco'),
+                        ),
+                        ElevatedButton(
+                          onPressed: corrige,
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              fixedSize: const Size(100, 40)),
+                          child: const Text('Corrige'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => vote(inputNumber),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              fixedSize: const Size(110, 40)),
+                          child: const Text('Confirma'),
+                        ),
+                      ],
+                    ),
+
+                    ElevatedButton(
+                      onPressed: endElection,
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          fixedSize: const Size(200, 40)),
+                      child: const Text('Encerrar Eleição'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

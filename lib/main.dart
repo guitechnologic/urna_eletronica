@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'services/vote_service.dart';
 import 'screens/home_screen.dart';
 
 void main() {
-  runApp(UrnaApp());
+  runApp(const UrnaApp());
 }
 
 class UrnaApp extends StatelessWidget {
+  const UrnaApp({super.key});
+
   @override
   Widget build(BuildContext context) {
+    final voteService = VoteService();
+
     return MaterialApp(
-      title: 'Urna Eletrônica',
-      theme: ThemeData(primarySwatch: Colors.blueGrey),
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+      home: HomeScreen(voteService: voteService),
     );
   }
 }
