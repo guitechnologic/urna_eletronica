@@ -1,6 +1,6 @@
 # Cargo;Numero;Nome;Partido
 
-governador;12;Carlos Silva;ABC
-governador;45;Marcos Lima;XYZ
-presidente;22;Jair Bolsonaro;DEM
-presidente;13;Luiz Inacio Lula da Silva;PT
+governador;11;Carlos Silva;ABC
+governador;12;Marcos Lima;XYZ
+presidente;13;Luis;DEM
+presidente;14;Joao;QWE
