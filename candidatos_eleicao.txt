@@ -1,6 +1,6 @@
 # Cargo;Numero;Nome;Partido
 
-governador;15;Ratinho Jr;MDB
-governador;45;Requiao;PT
-presidente;13;Lula;PT
-presidente;22;Jair Bolsonaro;PL
+governador;15;Joao;PartidoBatata
+governador;16;Jose;PartidoRepolho
+presidente;13;Luis;PartidoBatata
+presidente;22;Juca;PartidoRepolho
